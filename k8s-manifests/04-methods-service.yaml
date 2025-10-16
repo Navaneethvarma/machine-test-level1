@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: methods-service
+  namespace: machine-test
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: methods-service
+  template:
+    metadata:
+      labels:
+        app: methods-service
+    spec:
+      containers:
+      - name: methods-service
+        image: methods-service:latest
+        ports:
+        - containerPort: 8080
+        env:
+        - name: USER_SERVICE_HOST
+          value: "user-service"
+        - name: USER_SERVICE_PORT
+          value: "50051"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: methods-service
+  namespace: machine-test
+spec:
+  selector:
+    app: methods-service
+  ports:
+  - port: 8080
+    targetPort: 8080
+    nodePort: 30080
+  type: NodePort
