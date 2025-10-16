@@ -1,6 +1,7 @@
 package main
 
 import (
+    "os"
     "context"
     "log"
     "net"
@@ -107,12 +108,16 @@ func main() {
     reflection.Register(server)
 
     // Start server
-    lis, err := net.Listen("tcp", ":50051")
+    port := os.Getenv("SERVER_PORT")
+    if port == "" {
+        port = ":50051"
+    }
+    lis, err := net.Listen("tcp", port)
     if err != nil {
-        log.Fatalf("Failed to listen on :50051: %v", err)
+        log.Fatalf("Failed to listen on ${port}: %v", err)
     }
 
-    log.Printf("? User Service started successfully on :50051")
+    log.Printf("? User Service started successfully on ${port}")
     log.Printf("? gRPC reflection enabled")
     log.Printf("? Ready to accept requests")
     
@@ -120,3 +125,4 @@ func main() {
         log.Fatalf("Failed to serve: %v", err)
     }
 }
+

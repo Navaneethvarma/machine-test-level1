@@ -1,6 +1,7 @@
-﻿package main
+package main
 
 import (
+    "os"
     "context"
     "encoding/json"
     "log"
@@ -14,7 +15,15 @@ import (
 
 func main() {
     // Create gRPC client to user-service
-    userClient, err := client.NewUserClient("user-service:50051")
+    userServiceHost := os.Getenv("USER_SERVICE_HOST")
+    if userServiceHost == "" {
+        userServiceHost = "user-service"
+    }
+    userServicePort := os.Getenv("USER_SERVICE_PORT") 
+    if userServicePort == "" {
+        userServicePort = "50051"
+    }
+    userClient, err := client.NewUserClient(userServiceHost + ":" + userServicePort)
     if err != nil {
         log.Printf("Warning: Failed to create user client: %v", err)
         log.Printf("Starting with mock data mode")
@@ -37,7 +46,12 @@ func main() {
     }).Methods("GET")
 
     log.Println("Methods service starting on :8080")
-    log.Fatal(http.ListenAndServe(":8080", r))
+    serverPort := os.Getenv("SERVER_PORT")
+    if serverPort == "" {
+        serverPort = ":8080"
+    }
+    log.Println("Methods service starting on " + serverPort)
+    log.Fatal(http.ListenAndServe(serverPort, r))
 }
 
 func handleMethod(methodFunc func(ctx context.Context, waitTime int) ([]string, error), w http.ResponseWriter, r *http.Request) {
@@ -61,3 +75,4 @@ func handleMethod(methodFunc func(ctx context.Context, waitTime int) ([]string, 
         "wait_time":  waitTime,
     })
 }
+
